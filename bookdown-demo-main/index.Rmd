@@ -21,15 +21,13 @@ Dentro de los mercados financieros donde la volatilidad es parte de su naturalez
 
 Según TradingView (s.f.), la dominancia de Bitcoin en el mercado de criptomonedas es de más del 50%, lo que lo hace el dominador del mercado. Es por ello, el interés de realizar el estudio de series de tiempo a esta criptomoneda desde un enfoque univariado.
 
-Para este estudio se propone realizar análisis de series para 2 periodos de tiempo.
+Para este estudio se propone realizar análisis de serie para:
 
-1. Periodo diario: Desde 01 de enero de 2022 al 13 de abril de 2025
+1. Periodo diario: Desde 01 de enero de 2022 al 27 de abril de 2025
 
-2. Periodo de 5 minutos: Desde el 01 de enero de 2024 al 13 de abril de 2025.
 
 ## Fuente de información.
 
-La fuente de información será el principal Exchange de criptomonedas llamado “Binance”, el cual, por medio de su API, permite descargar información histórica de los precios de las criptomonedas por periodos de tiempo definidos (minuto, hora, diario, etc.)
+La fuente de información será por medio de Yahoo Finance.
 
-Para el propósito del presente estudio se descargará y procesará la información para crear 2 set de datos en formato CSV (uno por cada periodo definido anteriormente).
-Respecto al uso de esta información es totalmente libre y el único requisito para su generación es contar con una cuenta en el Exchange y tener el API habilitada(https://python-binance.readthedocs.io/en/latest/overview.html).
+Para el propósito del presente estudio se conectará directamente a la fuente de datos de yahoo binance por medio del paquete ZOO de r. tanto el paquete como la información de yahoo finance es libre y no tiene restricciones para su uso.
