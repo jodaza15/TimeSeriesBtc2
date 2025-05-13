@@ -1,3 +1,89 @@
-# Literature
+# MODELADO
 
-Here is a review of existing methods.
+**Modelo de Holt Winters**
+
+
+A continuación, se procede a aplicar el método de Holt Winter a los precios de cierre diarios del Bitcoin, dentro de la aplicación de este modelo se asume una estacionalidad aditiva.
+```{r}
+install.packages("quantmod")
+
+```
+```{r}
+library(quantmod)
+library(zoo)
+library(forecast)
+library(ggplot2)
+```
+
+ ```{r cargar-librerias, message=FALSE, warning=FALSE} library(quantmod) # <- Esta línea es clave library(zoo) # (si vas a usar as.zoo) ``
+
+```{r}
+# Descargar datos de Yahoo Finance
+getSymbols("BTC-USD",
+           src = "yahoo",
+           from = "2018-01-01",
+           to = "2025-04-27",#Sys.Date(),
+           periodicity = "daily")
+
+# Convertir el objeto descargado a 'zoo'
+btc_zoo <- as.zoo(`BTC-USD`)
+
+# Ver las primeras filas
+tail(btc_zoo)
+```
+
+```{r}
+library(zoo)
+btc_close <- as.zoo(btc_zoo$`BTC-USD.Close`)
+btc_ts <- ts(coredata(btc_close), frequency = 365, start = c(2018, 1))
+```
+
+a continuación se aplica el modelo.
+```{r}
+modelo_hw <- HoltWinters(btc_ts)
+```
+
+
+```{r}
+summary(modelo_hw)
+```
+Pronostico de 30 días.
+
+```{r}
+# Pronóstico a futuro (30 días)
+forecast_hw <- forecast(modelo_hw, h = 30)
+autoplot(forecast_hw) +
+  ggtitle("Pronóstico de BTC/USD con Holt-Winters") +
+  ylab("Precio de Cierre") +
+  xlab("Fecha")
+```
+
+Pronóstico para 110 días.
+```{r}
+ultimos_10 <- tail(btc_ts, 10)
+
+# Pronóstico 
+forecast_hw <- forecast(modelo_hw, h = 110)
+proyeccion <- forecast_hw$mean
+
+serie_completa <- ts(c(ultimos_10, proyeccion), start = time(ultimos_10)[1], frequency = frequency(btc_ts))
+
+
+df_proyeccion <- data.frame(
+  Fecha = time(serie_completa),
+  Precio = as.numeric(serie_completa),
+  Tipo = c(rep("Real", length(ultimos_10)), rep("Pronóstico", length(proyeccion)))
+)
+
+# Grafico
+ggplot(df_proyeccion, aes(x = Fecha, y = Precio, color = Tipo)) +
+  geom_line(size = 1.2) +
+  ggtitle("BTC/USD: Últimos 10 días + Pronóstico Holt-Winters") +
+  ylab("Precio de cierre") +
+  xlab("Fecha") +
+  scale_color_manual(values = c("Real" = "black", "Pronóstico" = "blue")) +
+  theme_minimal()
+```
+
+
+
