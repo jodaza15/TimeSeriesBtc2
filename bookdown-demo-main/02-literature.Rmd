@@ -1,6 +1,6 @@
 # MODELADO
 
-**Modelo de Holt Winters**
+## Modelo de Holt Winters
 
 
 A continuación, se procede a aplicar el método de Holt Winter a los precios de cierre diarios del Bitcoin, dentro de la aplicación de este modelo se asume una estacionalidad aditiva.
@@ -84,6 +84,100 @@ ggplot(df_proyeccion, aes(x = Fecha, y = Precio, color = Tipo)) +
   scale_color_manual(values = c("Real" = "black", "Pronóstico" = "blue")) +
   theme_minimal()
 ```
+
+## Modelo Arima
+
+**Metodología Box-Jenkins**
+
+###  Transformarla en estacionaria.
+
+```{r}
+library(tseries)
+adf.test(btc_ts,, alternative = c("stationary", "explosive"))
+```
+
+
+De acuerdo a la prueba Dickey Fuller se concluye que la serie de tiempo no es estacionaria dado que el Valor P esta por encima 0.05 , tal como se esperaba de acuerdo a su naturaleza de mercado financiero.
+
+Por lo tanto a continuación se procede a realizar la diferenciación de la serie de tiempo.
+
+```{r}
+
+ndiffs(btc_ts)
+## [1] 1
+#nos indica que 1 así que diferenciamos una vez y la llamamos dif.Indice.ts
+dif.btc.ts<-diff(btc_ts)
+#la graficamos
+plot(dif.btc.ts, main=" ", ylab="valor", col="deepskyblue", xlab="Años")
+title(main="DIF Precios diarios BTC")
+```
+Ahora se procede a confirmar nuevamente con la prueba Dickey Fuller que la serie diferenciada si sea estacionaria.
+
+```{r}
+adf.test(dif.btc.ts,, alternative = c("stationary", "explosive"))
+```
+De acuerdo al resultado de la prueba, se puede afirmar que la serie diferenciada es estacionaria
+
+### Funciones de ACF y PACT
+
+Continuando con la metodología Box-Jenkins, ahora se define y genera las funciones ACF y PACT
+
+En análisis de series de tiempo, la ACF (Función de Autocorrelación) y la PACF (Función de Autocorrelación Parcial) son herramientas visuales que ayudan a identificar la estructura de dependencia dentro de una serie temporal. La ACF muestra la correlación de una serie consigo misma a diferentes rezagos, mientras que la PACF controla la correlación de los rezagos anteriores al evaluar la correlación en un rezago específico. 
+
+ACF (Función de Autocorrelación)
+La ACF grafica la correlación entre una variable y sus valores rezagados en diferentes rezagos (diferencia de tiempo entre una observación y otra). 
+Ayuda a identificar patrones como estacionalidad, tendencias y persistencia en la serie. 
+
+Se utiliza para determinar el orden del modelo AR (Autorregresivo) y MA (Promedio Móvil). 
+
+PACF (Función de Autocorrelación Parcial)
+La PACF muestra la correlación entre una variable y sus valores rezagados, después de haber eliminado el efecto de los rezagos intermedios. 
+Ayuda a identificar el rezago exacto después del cual las autocorrelaciones cesan, lo cual es crucial para determinar el orden del modelo AR. 
+
+Se utiliza para identificar la presencia de patrones estacionales en la serie. 
+Diferencias clave:
+La ACF considera todas las correlaciones, mientras que la PACF solo considera las correlaciones directas, eliminando las indirectas.
+La ACF es útil para identificar la estructura general de correlación, mientras que la PACF ayuda a identificar la estructura de dependencia más precisa. 
+Interpretación:
+
+Un corte abrupto en el gráfico ACF en un rezago específico sugiere que un modelo de series temporales con ese número de rezagos podría ser apropiado.
+Un gráfico ACF que decae lentamente puede indicar una tendencia en los datos.
+Un corte brusco en el gráfico PACF puede indicar la presencia de estacionalidad.
+
+```{r}
+ACF<-acf(dif.btc.ts)
+```
+```{r}
+PACF<-pacf(dif.btc.ts)
+```
+### Modelado Autoarima
+
+```{r}
+modelo<-auto.arima(dif.btc.ts)
+modelo
+
+```
+
+```{r}
+library(changepoint)
+mval<-cpt.mean(dif.btc.ts,method = "AMOC") 
+cpts(mval)
+
+```
+
+```{r}
+plot(mval, type = "l", cpt.col = "blue", xlab = "Value", cpt.width = 4, main = "default penalty")
+```
+```{r}
+pred<-forecast(dif.btc.ts,h=12)
+pred
+```
+```{r}
+plot(pred, main=" ", ylab="valor", col="red", xlab="Años")
+title(main="Predicción DIF Precios del Bitcoin")
+
+```
+
 
 
 
